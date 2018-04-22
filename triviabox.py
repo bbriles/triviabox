@@ -35,17 +35,17 @@ if __name__ == '__main__':
     countQuestions = count_questions(conn)
 
     pygame.init()
-    screen = pygame.display.set_mode((640, 480))
+    screen = pygame.display.set_mode((800, 480), pygame.FULLSCREEN)
     done = False
     frameWait = 0 # start at 0 to get first question
 
     clock = pygame.time.Clock()
-    font = pygame.font.Font(None, 32)
-    statusFont = pygame.font.Font(None, 100)
-    questionRect = pygame.Rect((5, 5, 500, 200))
-    questionColor = (216, 216, 216)
-    answersRect = pygame.Rect((5, 205, 500, 200))
-    answersColor = (216, 216, 216)
+    font = pygame.font.Font(None, 60)
+    statusFont = pygame.font.Font(None, 200)
+    questionRect = pygame.Rect((5, 5, 795, 200))
+    questionColor = (226, 226, 226)
+    answersRect = pygame.Rect((5, 320, 795, 200))
+    answersColor = (226, 226, 226)
 
     correctText = statusFont.render("CORRECT", 1, (0, 232, 23))
     wrongText = statusFont.render("WRONG", 1, (232, 0, 23))
@@ -86,9 +86,9 @@ if __name__ == '__main__':
             screen.blit(renderedQuestion, questionRect.topleft)
             screen.blit(renderedAnswers, answersRect.topleft)
         elif mode == "correct":
-            screen.blit(correctText, (200 - correctText.get_width() // 2, 200 - correctText.get_height() // 2))
+            screen.blit(correctText, (400 - correctText.get_width() // 2, 240 - correctText.get_height() // 2))
         elif mode == "wrong":
-            screen.blit(wrongText, (200 - wrongText.get_width() // 2, 200 - wrongText.get_height() // 2))
+            screen.blit(wrongText, (400 - wrongText.get_width() // 2, 240 - wrongText.get_height() // 2))
 
         pygame.display.flip()
 
