@@ -5,6 +5,42 @@ from sqlite3 import Error
 import os
 import time
 import textutil
+import RPi.GPIO as GPIO
+
+# Globals
+buttonPending = False # is there a button push to process?
+buttonPressed = 0
+BUTTON_1 = 21
+BUTTON_2 = 20
+BUTTON_3 = 16
+
+def button_press(channel):
+    global buttonPending
+    global buttonPressed
+
+    if buttonPending == False:
+        buttonPending = True
+        buttonPressed = channel
+
+    print 'buttonPressed is ' + str(buttonPressed)
+
+def clear_button():
+    global buttonPending
+    global buttonPressed
+
+    buttonPending = False
+    buttonPressed = 0
+    print 'pending button cleared'
+
+def gpio_init():
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(BUTTON_1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(BUTTON_2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(BUTTON_3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+    #GPIO.add_event_detect(BUTTON_1, GPIO.BOTH, callback=button_press, bouncetime=300) 
+    #GPIO.add_event_detect(BUTTON_2, GPIO.BOTH, callback=button_press, bouncetime=300)
+    #GPIO.add_event_detect(BUTTON_3, GPIO.BOTH, callback=button_press, bouncetime=300)
 
 def create_connection(dbFile):
     try:
@@ -35,10 +71,14 @@ if __name__ == '__main__':
     countQuestions = count_questions(conn)
 
     pygame.init()
-    screen = pygame.display.set_mode((800, 480), pygame.FULLSCREEN)
+    screen = pygame.display.set_mode((780, 480))
+    #screen = pygame.display.set_mode((800, 480), pygame.FULLSCREEN)
+    pygame.mouse.set_visible(False)
     done = False
     frameWait = 0 # start at 0 to get first question
 
+    #gpio_init()
+    
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 60)
     statusFont = pygame.font.Font(None, 200)
