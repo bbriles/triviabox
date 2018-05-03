@@ -4,8 +4,9 @@ import sqlite3
 from sqlite3 import Error
 import os
 import time
+import sys
 import textutil
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 
 # Globals
 buttonPending = False # is there a button push to process?
@@ -64,19 +65,17 @@ def get_question(conn, countQuestions):
     return cur.fetchone()
 
 if __name__ == '__main__':
-    mode = "question"
+    mode = "new_question"
 
     random.seed()
     conn = create_connection('trivia.db')
     countQuestions = count_questions(conn)
 
     pygame.init()
-    screen = pygame.display.set_mode((780, 480))
+    screen = pygame.display.set_mode((800, 480))
     #screen = pygame.display.set_mode((800, 480), pygame.FULLSCREEN)
-    pygame.mouse.set_visible(False)
-    done = False
-    frameWait = 0 # start at 0 to get first question
-
+    #pygame.mouse.set_visible(False)
+    
     #gpio_init()
     
     clock = pygame.time.Clock()
@@ -90,13 +89,16 @@ if __name__ == '__main__':
     correctText = statusFont.render("CORRECT", 1, (0, 232, 23))
     wrongText = statusFont.render("WRONG", 1, (232, 0, 23))
 
-    while not done:
+    buttonUp = True
+
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                done = True
+                sys.exit()
 
-        # when frameWait ends, start new question
-        if frameWait == 0:
+        screen.fill((0, 0, 0))
+
+        if mode == "new_question":
             question = get_question(conn, countQuestions)
             renderedQuestion = textutil.render_textrect(question[0], font, questionRect, questionColor, (0, 0, 0), 0)
             answersText = "1) " + question[1] + "\n"
@@ -104,23 +106,29 @@ if __name__ == '__main__':
             answersText += "3) " + question[3] + "\n"
             renderedAnswers = textutil.render_textrect(answersText, font, answersRect, answersColor, (0, 0, 0), 0)
             mode = "question"
-            frameWait = -1
 
         pressed = pygame.key.get_pressed()
-        if pressed[pygame.K_ESCAPE]: done = True
-        if frameWait <= 0:
-            answer = 0
-            if pressed[pygame.K_1]: answer = 1
-            if pressed[pygame.K_2]: answer = 2
-            if pressed[pygame.K_3]: answer = 3
+        if pressed[pygame.K_ESCAPE]:
+            pygame.quit()
+            sys.exit()
+        
+        answer = 0
+        if pressed[pygame.K_1]: answer = 1
+        if pressed[pygame.K_2]: answer = 2
+        if pressed[pygame.K_3]: answer = 3
+        if answer == 0: buttonUp = True
+
+        # only take action on button press if buttons have been up
+        if buttonUp:
             if mode == "question" and answer > 0:
                 if question[4] == answer:
                     mode = "correct"
                 else:
                     mode = "wrong"
-                frameWait = 240
-
-        screen.fill((0, 0, 0))
+                buttonUp = False
+            elif answer > 0:
+                mode = "new_question"
+                buttonUp = False
 
         if mode == "question":
             screen.blit(renderedQuestion, questionRect.topleft)
@@ -130,9 +138,9 @@ if __name__ == '__main__':
         elif mode == "wrong":
             screen.blit(wrongText, (400 - wrongText.get_width() // 2, 240 - wrongText.get_height() // 2))
 
-        pygame.display.flip()
+        #debug blitting
+        #screen.blit(font.render(mode, 1, (255,255,255)), (600, 430))
 
-        if frameWait > 0:
-            frameWait -= 1
+        pygame.display.flip()
 
         clock.tick(60)
