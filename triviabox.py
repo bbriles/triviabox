@@ -6,7 +6,7 @@ import os
 import time
 import sys
 import textutil
-#import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 
 # Globals
 buttonPending = False # is there a button push to process?
@@ -72,11 +72,11 @@ if __name__ == '__main__':
     countQuestions = count_questions(conn)
 
     pygame.init()
-    screen = pygame.display.set_mode((800, 480))
-    #screen = pygame.display.set_mode((800, 480), pygame.FULLSCREEN)
-    #pygame.mouse.set_visible(False)
+    #screen = pygame.display.set_mode((800, 480))
+    screen = pygame.display.set_mode((800, 480), pygame.FULLSCREEN)
+    pygame.mouse.set_visible(False)
     
-    #gpio_init()
+    gpio_init()
     
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 60)
@@ -88,7 +88,8 @@ if __name__ == '__main__':
 
     correctText = statusFont.render("CORRECT", 1, (0, 232, 23))
     wrongText = statusFont.render("WRONG", 1, (232, 0, 23))
-
+    helperText = font.render("Press button to try again", 1, questionColor)
+    
     buttonUp = True
 
     while True:
@@ -113,9 +114,9 @@ if __name__ == '__main__':
             sys.exit()
         
         answer = 0
-        if pressed[pygame.K_1]: answer = 1
-        if pressed[pygame.K_2]: answer = 2
-        if pressed[pygame.K_3]: answer = 3
+        if GPIO.input(BUTTON_1) == GPIO.LOW or pressed[pygame.K_1]: answer = 1
+        if GPIO.input(BUTTON_2) == GPIO.LOW or pressed[pygame.K_2]: answer = 2
+        if GPIO.input(BUTTON_3) == GPIO.LOW or pressed[pygame.K_3]: answer = 3
         if answer == 0: buttonUp = True
 
         # only take action on button press if buttons have been up
@@ -135,8 +136,10 @@ if __name__ == '__main__':
             screen.blit(renderedAnswers, answersRect.topleft)
         elif mode == "correct":
             screen.blit(correctText, (400 - correctText.get_width() // 2, 240 - correctText.get_height() // 2))
+            screen.blit(helperText, (400 - helperText.get_width() //2, 420))
         elif mode == "wrong":
             screen.blit(wrongText, (400 - wrongText.get_width() // 2, 240 - wrongText.get_height() // 2))
+            screen.blit(helperText, (400 - helperText.get_width() //2, 420))
 
         #debug blitting
         #screen.blit(font.render(mode, 1, (255,255,255)), (600, 430))
